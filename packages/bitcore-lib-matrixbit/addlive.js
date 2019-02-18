@@ -19,6 +19,7 @@ if (error) {
 }
 var address = privateKey.toAddress();
 console.log(address);
+console.log(address.toString());
 console.log(address.toLegacyAddress());
 var pk2 = new PrivateKey();
 var pk2s = new PrivateKey(pk2, Network.livenet);
@@ -110,9 +111,11 @@ console.log(address.toLegacyAddress());
 var pk2 = new PrivateKey();
 var pk2s = new PrivateKey(pk2, Network.livenet);
 var pb2 = pk2s.toPublicKey();
+console.log(pk2.toWIF());
 var pk3 = new PrivateKey();
 var pk3s = new PrivateKey(pk3, Network.livenet);
 var pb3 = pk3s.toPublicKey();
+console.log(pk3.toWIF());
 var p2shAddress = new Address([publicKey, pb2, pb3], 2);
 console.log(p2shAddress);
 console.log(p2shAddress.toLegacyAddress());

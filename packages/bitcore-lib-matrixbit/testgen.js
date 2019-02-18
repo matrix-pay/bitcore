@@ -2,6 +2,8 @@ const bitcore = require('./index');
 var PrivateKey = bitcore.PrivateKey;
 var Network = bitcore.Networks;
 var Address = bitcore.Address;
+
+
 // privkey.toWIF().should.equal(wifLivenet);
 var privateKey = new PrivateKey('Kz21uDXrgR3KbWSQc4UBZRDkYwc2itojVFFaxciFok9upmNGdKmE', Network.livenet);
 console.log(privateKey);
