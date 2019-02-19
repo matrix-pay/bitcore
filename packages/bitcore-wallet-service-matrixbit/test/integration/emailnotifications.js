@@ -60,12 +60,12 @@ describe('Email notifications', function() {
                 subjectPrefix: '[test wallet]',
                 publicTxUrlTemplate: {
                   btc: {
-                    livenet: 'https://insight.bitpay.com/tx/{{txid}}',
-                    testnet: 'https://test-insight.bitpay.com/tx/{{txid}}',
+                    livenet: 'https://insight-mxbit.bitpay.com/tx/{{txid}}',
+                    testnet: 'https://test-insight-mxbit.bitpay.com/tx/{{txid}}',
                   },
                   bch: {
-                    livenet: 'https://bch-insight.bitpay.com/#/tx/{{txid}}',
-                    testnet: 'https://test-bch-insight.bitpay.com/#/tx/{{txid}}',
+                    livenet: 'https://bch-insight-mxbit.bitpay.com/#/tx/{{txid}}',
+                    testnet: 'https://test-bch-insight-mxbit.bitpay.com/#/tx/{{txid}}',
                   }
                 },
               },
@@ -78,7 +78,7 @@ describe('Email notifications', function() {
       });
     });
 
- 
+
 
     it('should handle small incomming payments (bch)', function(done) {
       server.createAddress({}, function(err, address) {
@@ -148,12 +148,12 @@ describe('Email notifications', function() {
                 subjectPrefix: '[test wallet]',
                 publicTxUrlTemplate: {
                   btc: {
-                    livenet: 'https://insight.bitpay.com/tx/{{txid}}',
-                    testnet: 'https://test-insight.bitpay.com/tx/{{txid}}',
+                    livenet: 'https://insight-mxbit.bitpay.com/tx/{{txid}}',
+                    testnet: 'https://test-insight-mxbit.bitpay.com/tx/{{txid}}',
                   },
                   bch: {
-                    livenet: 'https://bch-insight.bitpay.com/#/tx/{{txid}}',
-                    testnet: 'https://test-bch-insight.bitpay.com/#/tx/{{txid}}',
+                    livenet: 'https://bch-insight-mxbit.bitpay.com/#/tx/{{txid}}',
+                    testnet: 'https://test-bch-insight-mxbit.bitpay.com/#/tx/{{txid}}',
                   }
                 },
               },
@@ -301,7 +301,7 @@ describe('Email notifications', function() {
             one.subject.should.contain('Payment sent');
             one.text.should.contain('800,000');
             should.exist(one.html);
-            one.html.should.contain('https://insight.bitpay.com/tx/' + txp.txid);
+            one.html.should.contain('https://insight-mxbit.bitpay.com/tx/' + txp.txid);
             server.storage.fetchUnsentEmails(function(err, unsent) {
               should.not.exist(err);
               unsent.should.be.empty;
@@ -650,12 +650,12 @@ describe('Email notifications', function() {
                 subjectPrefix: '[test wallet]',
                 publicTxUrlTemplate: {
                   btc: {
-                    livenet: 'https://insight.bitpay.com/tx/{{txid}}',
-                    testnet: 'https://test-insight.bitpay.com/tx/{{txid}}',
+                    livenet: 'https://insight-mxbit.bitpay.com/tx/{{txid}}',
+                    testnet: 'https://test-insight-mxbit.bitpay.com/tx/{{txid}}',
                   },
                   bch: {
-                    livenet: 'https://bch-insight.bitpay.com/#/tx/{{txid}}',
-                    testnet: 'https://test-bch-insight.bitpay.com/#/tx/{{txid}}',
+                    livenet: 'https://bch-insight-mxbit.bitpay.com/#/tx/{{txid}}',
+                    testnet: 'https://test-bch-insight-mxbit.bitpay.com/#/tx/{{txid}}',
                   }
                 },
               },

@@ -45,7 +45,7 @@ export class BlockDetailPage {
       network
     };
     this.apiProvider.changeNetwork(this.chainNetwork);
-    const currentCurrency = localStorage.getItem('insight-currency');
+    const currentCurrency = localStorage.getItem('insight-mxbit-currency');
     this.priceProvider.setCurrency(currentCurrency);
   }
 

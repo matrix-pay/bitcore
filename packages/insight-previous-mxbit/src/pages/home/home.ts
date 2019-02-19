@@ -52,7 +52,7 @@ export class HomePage {
   }
 
   public loadView(chainNetwork: ChainNetwork, currencyChanged: boolean) {
-    const currentCurrency = localStorage.getItem('insight-currency');
+    const currentCurrency = localStorage.getItem('insight-mxbit-currency');
     this.priceProvider.setCurrency(currentCurrency);
     if (currencyChanged) {
       this.latestBlocks.reloadData();

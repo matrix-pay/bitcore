@@ -1,42 +1,40 @@
 import { Component, Injectable } from '@angular/core';
-import { IonicPage, NavParams } from 'ionic-angular';
+import { Events, IonicPage, NavParams } from 'ionic-angular';
+import { AddressProvider } from '../../providers/address/address';
 import { ApiProvider, ChainNetwork } from '../../providers/api/api';
 import { CurrencyProvider } from '../../providers/currency/currency';
 import { Logger } from '../../providers/logger/logger';
 import { PriceProvider } from '../../providers/price/price';
-import { RedirProvider } from '../../providers/redir/redir';
 import { TxsProvider } from '../../providers/transactions/transactions';
 
 @Injectable()
 @IonicPage({
-  name: 'transaction',
-  segment: ':chain/:network/tx/:txId',
+  name: 'address',
+  segment: ':chain/:network/address/:addrStr',
   defaultHistory: ['home']
 })
 @Component({
-  selector: 'page-transaction',
-  templateUrl: 'transaction.html'
+  selector: 'page-address',
+  templateUrl: 'address.html'
 })
-export class TransactionPage {
+export class AddressPage {
   public loading = true;
-  private txId: string;
+  private addrStr: string;
   private chainNetwork: ChainNetwork;
-  public tx: any = {};
-  public vout: number;
-  public fromVout: boolean;
+  public address: any = {};
+  public nroTransactions = 0;
 
   constructor(
     public navParams: NavParams,
+    public currencyProvider: CurrencyProvider,
     private apiProvider: ApiProvider,
-    private txProvider: TxsProvider,
-    public currency: CurrencyProvider,
+    public txProvider: TxsProvider,
     private logger: Logger,
     private priceProvider: PriceProvider,
-    public redirProvider: RedirProvider
+    private addrProvider: AddressProvider,
+    private events: Events
   ) {
-    this.txId = navParams.get('txId');
-    this.vout = navParams.get('vout');
-    this.fromVout = navParams.get('fromVout') || undefined;
+    this.addrStr = navParams.get('addrStr');
 
     const chain: string =
       navParams.get('chain') || this.apiProvider.getConfig().chain;
@@ -48,29 +46,32 @@ export class TransactionPage {
       network
     };
     this.apiProvider.changeNetwork(this.chainNetwork);
-    const currentCurrency = localStorage.getItem('insight-currency');
+    const currentCurrency = localStorage.getItem('insight-mxbit-currency');
     this.priceProvider.setCurrency(currentCurrency);
+
+    this.events.subscribe('CoinList', (d: any) => {
+      this.nroTransactions = d.length;
+    });
   }
 
-  public ionViewDidLoad(): void {
-    this.txProvider.getTx(this.txId).subscribe(
+  public ionViewWillLoad(): void {
+    this.addrProvider.getAddressBalance(this.addrStr).subscribe(
       data => {
-        this.tx = data.tx;
+        this.address = {
+          balance: data.balance,
+          confirmed: data.confirmed,
+          unconfirmed: data.unconfirmed,
+          addrStr: this.addrStr
+        };
         this.loading = false;
-        // Be aware that the tx component is loading data into the tx object
       },
       err => {
         this.logger.error(err);
-        this.loading = false;
       }
     );
   }
 
-  public goToBlock(blockHash: string): void {
-    this.redirProvider.redir('block-detail', {
-      blockHash,
-      chain: this.chainNetwork.chain,
-      network: this.chainNetwork.network
-    });
+  public getConvertedNumber(n: number): number {
+    return this.currencyProvider.getConvertedNumber(n);
   }
 }

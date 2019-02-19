@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
 import * as bitcoreLib from 'bitcore-lib';
 import * as bitcoreLibCash from 'bitcore-lib-cash';
+import * as bitcoreLibMXBIT from 'bitcore-lib-matrixbit';
 import * as _ from 'lodash';
 import { Observable } from 'rxjs';
 import { ApiProvider, ChainNetwork } from '../api/api';
@@ -73,6 +74,11 @@ export class SearchProvider {
         this.isValidBitcoinCashMainnetAddress(addr) ||
         this.isValidBitcoinCashLegacyMainnetAddress(addr)
       );
+    } else if (coin.toLowerCase() === 'MXBIT' && network === 'mainnet') {
+      return (
+        this.isValidBitcoinMXBITMainnetAddress(addr) ||
+        this.isValidBitcoinMXBITLegacyMainnetAddress(addr)
+      );
     }
   }
 
@@ -91,13 +97,21 @@ export class SearchProvider {
     return !!bitcoreLibCash.Address.isValid(data, 'mainnet');
   }
 
+  private isValidBitcoinMXBITLegacyMainnetAddress(data: string): boolean {
+    return !!bitcoreLib.Address.isValid(data, 'mainnet');
+  }
+
+  private isValidBitcoinMXBITMainnetAddress(data: string): boolean {
+    return !!bitcoreLibMXBIT.Address.isValid(data, 'mainnet');
+  }
+
   private isValidBlockIndex(inputValue): boolean {
     return isFinite(inputValue);
   }
 
   private extractAddress(address: string): string {
     const extractedAddress = address
-      .replace(/^(bitcoincash:|bchtest:|bitcoin:)/i, '')
+      .replace(/^(bitcoincash:|bchtest:|bitcoin:|matrixbit:)/i, '')
       .replace(/\?.*/, '');
     return extractedAddress || address;
   }

@@ -15,7 +15,7 @@ module.exports = {
   scopes: [
     {name: 'all'},
     {name: 'node'},
-    {name: 'insight'},
+    {name: 'insight-mxbit'},
     {name: 'libs'},
     {name: 'bws'},
     {name: 'client'}

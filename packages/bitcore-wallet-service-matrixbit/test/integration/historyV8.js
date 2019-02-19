@@ -67,7 +67,7 @@ describe('History V8', function() {
     });
   });
 
- 
+
 
   describe('#getTxHistoryV8', function() {
     var server, wallet, mainAddresses, changeAddresses;
@@ -87,7 +87,7 @@ describe('History V8', function() {
       });
     });
 
-    it('should get tx history from insight, 20 items', function(done) {
+    it('should get tx history from insight-mxbit, 20 items', function(done) {
       helpers.stubHistoryV8(50, BCHEIGHT);
       server.getTxHistory({limit: 20}, function(err, txs, fromCache) {
         should.not.exist(err);
@@ -98,7 +98,7 @@ describe('History V8', function() {
         _.each(txs, function(tx) {
           tx.txid.should.equal('txid' + i);
           tx.confirmations.should.equal(i);
-          if (i) { 
+          if (i) {
             tx.blockheight.should.equal(BCHEIGHT - i + 1);
           }  else {
 
@@ -121,7 +121,7 @@ describe('History V8', function() {
         txs[0].height =txs[1].height;
         txs[1].address =main[0].address;
         txs[0].category=txs[1].category='move';
-        
+
         helpers.stubHistoryV8(null, null, txs);
 
         server.getTxHistory({limit: 10}, function(err, txs, fromCache) {
@@ -153,7 +153,7 @@ describe('History V8', function() {
         txs[0].height =txs[1].height;
         txs[1].address =change[0].address;
         txs[0].category=txs[1].category='move';
-        
+
         helpers.stubHistoryV8(null, null, txs);
 
         server.getTxHistory({limit: 10}, function(err, txs, fromCache) {
@@ -188,7 +188,7 @@ describe('History V8', function() {
         txs[1].address =main[0].address;
         txs[2].address =change[0].address;
         txs[3].address =main[1].address;
-        
+
         helpers.stubHistoryV8(null, null, txs);
 
         server.getTxHistory({limit: 10}, function(err, txs, fromCache) {
@@ -210,7 +210,7 @@ describe('History V8', function() {
           _.map(txs[0].outputs,'address').should.not.include(
             change[0].address,
           );
- 
+
           done();
         });
       });
@@ -231,7 +231,7 @@ describe('History V8', function() {
         _.first(txs).id.should.equal('id0');
         server.getTxHistory({skip: 20, limit: 10}, function(err, txs, fromCache) {
           // first TX result should be:
-          // txid: 19 
+          // txid: 19
           // confirmations: 19
           should.not.exist(err);
           fromCache.should.equal(true);
@@ -266,7 +266,7 @@ describe('History V8', function() {
         _.first(txs).id.should.equal('id0');
         server.getTxHistory({skip: 5, limit: 20}, function(err, txs, fromCache) {
           // first TX result should be:
-          // txid: 19 
+          // txid: 19
           // confirmations: 19
           should.not.exist(err);
           fromCache.should.equal(true);
@@ -288,7 +288,7 @@ describe('History V8', function() {
     });
 
 
-    
+
     describe("Stream cache", () => {
       it('should not stream cache on first call', function(done) {
         this.timeout(10000);
@@ -514,7 +514,7 @@ describe('History V8', function() {
     });
 
 
-    it('should get tx history from insight, in 2 overlapping pages', function(done) {
+    it('should get tx history from insight-mxbit, in 2 overlapping pages', function(done) {
       helpers.stubHistoryV8(300, BCHEIGHT);
       server.getTxHistory({limit: 25}, function(err, txs, fromCache) {
         should.not.exist(err);
@@ -609,10 +609,10 @@ describe('History V8', function() {
                 category: 'fee',
                 height: 1000,
                },
-              ]; 
- 
+              ];
+
               helpers.stubHistoryV8(null, null,txs);
-              helpers.stubCheckData(blockchainExplorer, server, wallet.coin == 'bch', () =>{ 
+              helpers.stubCheckData(blockchainExplorer, server, wallet.coin == 'bch', () =>{
               server.getTxHistory({}, function(err, txs) {
                 should.not.exist(err);
                 should.exist(txs);

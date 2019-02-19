@@ -227,15 +227,15 @@ WalletService.getInstance = function(opts) {
  * Gets an instance of the server after authenticating the copayer.
  * @param {Object} opts
  * @param {string} opts.copayerId - The copayer id making the request.
- * @param {string} opts.message - (Optional) The contents of the request to be signed. 
+ * @param {string} opts.message - (Optional) The contents of the request to be signed.
  *  Only needed if no session token is provided.
- * @param {string} opts.signature - (Optional) Signature of message to be verified using 
- * one of the copayer's requestPubKeys. 
+ * @param {string} opts.signature - (Optional) Signature of message to be verified using
+ * one of the copayer's requestPubKeys.
  * Only needed if no session token is provided.
- * @param {string} opts.session - (Optional) A valid session token previously obtained using 
+ * @param {string} opts.session - (Optional) A valid session token previously obtained using
  * the #login method
  * @param {string} opts.clientVersion - A string that identifies the client issuing the request
- * @param {string} [opts.walletId] - The wallet id to use as current wallet 
+ * @param {string} [opts.walletId] - The wallet id to use as current wallet
  * for this request (only when copayer is support staff).
  */
 WalletService.getInstanceWithAuth = function(opts, cb) {
@@ -441,7 +441,7 @@ WalletService.prototype.createWallet = function(opts, cb) {
 
   opts.supportBIP44AndP2PKH = _.isBoolean(opts.supportBIP44AndP2PKH) ? opts.supportBIP44AndP2PKH : true;
 
-  var derivationStrategy = opts.supportBIP44AndP2PKH ? 
+  var derivationStrategy = opts.supportBIP44AndP2PKH ?
     Constants.DERIVATION_STRATEGIES.BIP44 : Constants.DERIVATION_STRATEGIES.BIP45;
   var addressType = (opts.n === 1 && opts.supportBIP44AndP2PKH) ?
     Constants.SCRIPT_TYPES.P2PKH : Constants.SCRIPT_TYPES.P2SH;
@@ -505,7 +505,7 @@ WalletService.prototype.getWallet = function(opts, cb) {
     if (!wallet) return cb(Errors.WALLET_NOT_FOUND);
 
     // cashAddress migration
-    if (wallet.coin != 'bch' || wallet.nativeCashAddr)  
+    if (wallet.coin != 'bch' || wallet.nativeCashAddr)
       return cb(null, wallet);
 
     // only for testing
@@ -1147,9 +1147,9 @@ WalletService.prototype.createAddress = function(opts, cb) {
       self.getWallet({doNotMigrate: opts.doNotMigrate}, function(err, wallet) {
         if (err) return cb(err);
         if (!wallet.isComplete()) return cb(Errors.WALLET_NOT_COMPLETE);
-        if (wallet.scanStatus == 'error') 
+        if (wallet.scanStatus == 'error')
           return cb(Errors.WALLET_NEED_SCAN);
- 
+
 
         var createFn = wallet.singleAddress ? getFirstAddress : createNewAddress;
         return createFn(wallet, (err, address) => {
@@ -1260,7 +1260,7 @@ WalletService.prototype._getUtxosForCurrentWallet = function(opts, cb) {
 
         wallet = w;
 
-        if (wallet.scanStatus == 'error') 
+        if (wallet.scanStatus == 'error')
           return cb(Errors.WALLET_NEED_SCAN);
 
         coin = wallet.coin;
@@ -1383,7 +1383,7 @@ WalletService.prototype.getUtxos = function(opts, cb) {
 
     if (opts.addresses.length>1)
       return cb(new ClientError('Addresses option only support 1 address'));
-  
+
     self.getWallet({}, function(err, wallet) {
       if (err) return next(err);
 
@@ -2095,7 +2095,7 @@ WalletService.prototype._validateOutputs = function(opts, wallet, cb) {
     let addrErr = self._validateAddr(wallet, output.toAddress, opts);
     if (addrErr) return addrErr;
 
-    
+
 
     if (!checkRequired(output, ['toAddress', 'amount'])) {
       return new ClientError('Argument missing in output #' + (i + 1) + '.');
@@ -2186,7 +2186,7 @@ WalletService.prototype._validateAndSanitizeTxOpts = function(wallet, opts, cb) 
       // TODO remove one cashaddr is used internally (noCashAddr flag)?
       opts.origAddrOutputs = _.map(opts.outputs, (x) => {
         let ret =   {
-          'toAddress': x.toAddress, 
+          'toAddress': x.toAddress,
           'amount': x.amount,
         };
         if (x.message)
@@ -2274,7 +2274,7 @@ WalletService.prototype.createTx = function(opts, cb) {
     } else {
       if (opts.changeAddress) {
 
-        // 
+        //
 
         let addrErr = self._validateAddr(wallet, opts.changeAddress, opts);
         if (addrErr) return cb(addrErr);
@@ -2301,9 +2301,9 @@ WalletService.prototype.createTx = function(opts, cb) {
       if (err) return cb(err);
       if (!wallet.isComplete()) return cb(Errors.WALLET_NOT_COMPLETE);
 
-      if (wallet.scanStatus == 'error') 
+      if (wallet.scanStatus == 'error')
         return cb(Errors.WALLET_NEED_SCAN);
-      
+
       checkTxpAlreadyExists(opts.txProposalId, function(err, txp) {
         if (err) return cb(err);
         if (txp) return cb(null, txp);
@@ -3045,7 +3045,7 @@ WalletService.prototype._normalizeV8TxHistory = function(walletId, txs, bcHeight
           address: tx.address,
           amount: Math.abs(tx.satoshis),
       };
- 
+
      if (moves[tx.txid] )  {
         moves[tx.txid].outputs.push(output);
         return false;
@@ -3119,7 +3119,7 @@ WalletService.prototype._normalizeV8TxHistory = function(walletId, txs, bcHeight
           break;
         default:
           ret.action = 'invalid';
-      }; 
+      };
 
       // not available
       //inputs: inputs,
@@ -3141,7 +3141,7 @@ WalletService.prototype._getBlockchainHeight = function(coin, network, cb) {
     cacheKey, Defaults.BLOCKHEIGHT_CACHE_TIME, (err, values) =>  {
     if (err) return cb(err);
 
-    if (values) 
+    if (values)
       return cb(null, values.current, values.hash, true);
 
     values = {};
@@ -3184,7 +3184,7 @@ WalletService.prototype.registerWalletV8 = function(wallet, cb) {
 
    self.logi('Registering wallet');
    bc.register(wallet, (err) => {
-     if (err) { 
+     if (err) {
        return cb(err);
      }
      wallet.beRegistered = true;
@@ -3195,7 +3195,7 @@ WalletService.prototype.registerWalletV8 = function(wallet, cb) {
 WalletService.prototype.checkWalletSync = function(bc, wallet, cb) {
   var self = this;
 
-  if (!wallet.addressManager && !wallet.addressManager.receiveAddressIndex) 
+  if (!wallet.addressManager && !wallet.addressManager.receiveAddressIndex)
     return cb(null, true);
 
   // check cache
@@ -3271,15 +3271,15 @@ WalletService.prototype.syncWallet = function(wallet, cb, skipCheck, count) {
 
       function syncAddr(addresses, icb) {
         if (!addresses || _.isEmpty(addresses)) {
-          //self.logi('Addresses already sync'); 
+          //self.logi('Addresses already sync');
           return icb();
         }
 
         var addressStr = _.map(addresses,'address');
-        self.logi('Syncing addresses: ', addressStr.length); 
+        self.logi('Syncing addresses: ', addressStr.length);
         bc.addAddresses(wallet, addressStr, (err) => {
           if (err) return cb(err);
-          
+
           self.storage.markSyncedAddresses(addressStr, icb);
         });
       }
@@ -3318,7 +3318,7 @@ WalletService._getResultTx = function(wallet, indexedAddresses, tx, opts) {
   var amountIn, amountOut, amountOutChange;
   var amount, action, addressTo;
   var inputs, outputs, foreignCrafted;
- 
+
   function sum(items, isMine, isChange) {
     var filter = {};
     if (_.isBoolean(isMine)) filter.isMine = isMine;
@@ -3512,7 +3512,7 @@ WalletService.prototype.getTxHistoryV8 = function(bc, wallet, opts, skip, limit,
     (next) => {
       if (skip == 0 || !streamKey) return next();
 
-      log.debug('Checking streamKey/skip',streamKey, skip); 
+      log.debug('Checking streamKey/skip',streamKey, skip);
       self.storage.getTxHistoryStreamV8(wallet.id, (err, result) => {
         if (err) return next(err);
         if (!result) return next();
@@ -3564,8 +3564,8 @@ WalletService.prototype.getTxHistoryV8 = function(bc, wallet, opts, skip, limit,
     },
     (next) => {
 
-      // Case 1. 
-      //            t --> 
+      // Case 1.
+      //            t -->
       //  | Old TXS    | ======= LAST TXS ========== \
       //                     ^skip+limit       ^skip
 
@@ -3575,10 +3575,10 @@ WalletService.prototype.getTxHistoryV8 = function(bc, wallet, opts, skip, limit,
         fromCache = false;
         fromBc = true;
         return next();
-      } 
-      // Case 2. 
+      }
+      // Case 2.
       // compose result (if the wallet has move that `limit`txs)
-      //            t --> 
+      //            t -->
       //  | Old TXS    |  [x]======= LAST TXS ==========[0] \
       //       ^skip+limit       ^skip
       if (lastTxs.length >= skip) {
@@ -3589,8 +3589,8 @@ WalletService.prototype.getTxHistoryV8 = function(bc, wallet, opts, skip, limit,
         fromBc = resultTxs.length > 0;
       } else {
 
-      // Case 3. 
-      //            t --> 
+      // Case 3.
+      //            t -->
       //  | Old TXS ------------------ | ======= LAST TXS ========== \
       //       ^skip+limit       ^skip
 
@@ -3599,13 +3599,13 @@ WalletService.prototype.getTxHistoryV8 = function(bc, wallet, opts, skip, limit,
       // Complete result
       self.storage.getTxHistoryCacheV8(self.walletId, skip, limit, (err, oldTxs) => {
         if (err){
-          return next(err); 
+          return next(err);
         }
 
         if (oldTxs.length) {
           fromCache = true;
         }
-      
+
         resultTxs  = resultTxs.concat(oldTxs);
         return next();
      });
@@ -3621,7 +3621,7 @@ WalletService.prototype.getTxHistoryV8 = function(bc, wallet, opts, skip, limit,
           return false;
         };
         if (!cacheStatus.tipHeight)
-        return true;  
+        return true;
 
         return i.blockheight > cacheStatus.tipHeight;
       });
@@ -3655,7 +3655,7 @@ WalletService.prototype.getTxHistory = function(opts, cb) {
   var bc;
   opts = opts || {};
 
-  // 50 is accepted by insight. 
+  // 50 is accepted by insight-mxbit.
   // TODO move it to a bigger number with v8 is fully deployed
   opts.limit = (_.isUndefined(opts.limit) ? 50 : opts.limit);
   if (opts.limit > Defaults.HISTORY_LIMIT)
@@ -3664,10 +3664,10 @@ WalletService.prototype.getTxHistory = function(opts, cb) {
   self.getWallet({}, function(err, wallet) {
     if (err) return cb(err);
 
-    if (wallet.scanStatus == 'error') 
+    if (wallet.scanStatus == 'error')
       return cb(Errors.WALLET_NEED_SCAN);
 
-    if (wallet.scanStatus == 'running') 
+    if (wallet.scanStatus == 'running')
       return cb(Errors.WALLET_BUSY);
 
     bc = self._getBlockchainExplorer(wallet.coin, wallet.network);

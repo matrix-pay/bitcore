@@ -5,7 +5,7 @@ jobs:
   build-and-test:
     docker:
       - image: circleci/node:8.10-browsers
-    working_directory: ~/insight
+    working_directory: ~/insight-mxbit
     steps:
       - checkout
 

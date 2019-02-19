@@ -18,13 +18,14 @@ export interface NetworkSettings {
 @Injectable()
 export class ApiProvider {
   public networkSettings = new BehaviorSubject<NetworkSettings>({
-    availableNetworks: [{ chain: 'BTC', network: 'mainnet' }],
-    selectedNetwork: { chain: 'BTC', network: 'mainnet' }
+    availableNetworks: [{ chain: 'MXBIT', network: 'mainnet' }],
+    selectedNetwork: { chain: 'MXBIT', network: 'mainnet' }
   });
 
   public ratesAPI = {
     btc: 'https://bitpay.com/api/rates',
-    bch: 'https://bitpay.com/api/rates/bch'
+    bch: 'https://bitpay.com/api/rates/bch',
+    MXBIT: 'https://bitpay.com/api/rates/bch'
   };
 
   constructor(

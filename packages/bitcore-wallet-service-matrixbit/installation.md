@@ -63,11 +63,11 @@ An example of this configuration is:
       'btc': {
         livenet: {
             provider: 'v8',
-            url: 'https://insight.bitpay.com:443',
+            url: insight-mxbit,
          },
         testnet: {
             provider: 'v8',
-            url: 'https://test-insight.bitpay.com:443',
+            url: insight-mxbit,
          },
       },
   }

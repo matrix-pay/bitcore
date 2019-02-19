@@ -18,13 +18,15 @@ export class PriceProvider {
 
   public setCurrency(currency: string): void {
     this.currency.currencySymbol = currency;
-    localStorage.setItem('insight-currency', currency);
+    localStorage.setItem('insight-mxbit-currency', currency);
 
     if (currency === 'USD') {
-      const ratesAPI =
-        this.api.getConfig().chain === 'BTC'
-          ? this.api.ratesAPI.btc
-          : this.api.ratesAPI.bch;
+      let ratesAPI = this.api.ratesAPI.btc;
+        if(this.api.getConfig().chain === 'BCH'){
+          ratesAPI = this.api.ratesAPI.bch
+        } else if(this.api.getConfig().chain === 'MXBIT'){
+          ratesAPI = this.api.ratesAPI.MXBIT
+        }
       this.api.http.get(ratesAPI).subscribe(
         (data: any) => {
           const currencyParsed: any = JSON.parse(data._body);

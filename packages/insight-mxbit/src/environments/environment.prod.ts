@@ -2,7 +2,7 @@ import { LoggerConfig, NgxLoggerLevel } from 'ngx-logger';
 import { BCH, BTC, Chain, tBCH, tBTC } from '../app/types/chains';
 
 const loggingSettings: LoggerConfig = {
-  serverLoggingUrl: '/api/logs/insight',
+  serverLoggingUrl: '/api/logs/insight-mxbit',
   level: NgxLoggerLevel.DEBUG,
   serverLogLevel: NgxLoggerLevel.ERROR
 };

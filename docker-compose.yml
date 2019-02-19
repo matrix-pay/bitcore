@@ -2,11 +2,11 @@ version: '3'
 services:
   database:
     image: mongo:3.4-jessie
-    ports: 
+    ports:
     - 27017:27017
-    volumes: 
+    volumes:
     - /data/db:/data/db
-    
+
   bitcore-node:
     build: .
     image: bitcore-node
@@ -19,8 +19,8 @@ services:
       - DB_HOST=database
     env_file: .env
 
-#insight:
-  #image: insight
+#insight-mxbit:
+  #image: insight-mxbit
   #links:
     #- bitcore-node
   #environment:
