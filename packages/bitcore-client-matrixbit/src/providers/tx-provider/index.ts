@@ -1,8 +1,10 @@
 import { BTCTxProvider } from './btc'
 import { BCHTxProvider } from './bch';
+import { MXBITTxProvider } from './mxbit';
 const providers = {
   BTC: new BTCTxProvider(),
-  BCH: new BCHTxProvider()
+  BCH: new BCHTxProvider(),
+  MXBIT: new MXBITTxProvider(),
 };
 
 export class TxProvider {

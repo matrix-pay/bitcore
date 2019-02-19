@@ -2,6 +2,7 @@ import { BTCStateProvider } from './btc/btc';
 import { BCHStateProvider } from './bch/bch';
 import { ETHStateProvider } from './eth/eth';
 import { BATStateProvider } from './erc20/tokens/bat';
+import { MXBITStateProvider } from './mxbit/mxbit';
 import { CSP } from '../../types/namespaces/ChainStateProvider';
 import { Chain } from '../../types/ChainNetwork';
 
@@ -9,7 +10,8 @@ const services: CSP.ChainStateServices = {
   BTC: new BTCStateProvider(),
   BCH: new BCHStateProvider(),
   ETH: new ETHStateProvider(),
-  BAT: new BATStateProvider()
+  BAT: new BATStateProvider(),
+  MXBIT: new MXBITStateProvider()
 };
 
 class ChainStateProxy implements CSP.ChainStateProvider {
@@ -83,7 +85,7 @@ class ChainStateProxy implements CSP.ChainStateProvider {
   async getWalletBalance(params: CSP.GetWalletBalanceParams) {
     return this.get(params).getWalletBalance(params);
   }
-  
+
   async getWalletBalanceAtTime(params: CSP.GetWalletBalanceAtTimeParams) {
     return this.get(params).getWalletBalanceAtTime(params);
   }

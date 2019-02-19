@@ -2,7 +2,8 @@
 
 const bitcoreLibs = {
   BTC: require('bitcore-lib'),
-  BCH: require('bitcore-lib-cash')
+  BCH: require('bitcore-lib-cash'),
+  MXBIT: require('bitcore-lib-matrixbit')
 };
 const program = require('../ts_build/program');
 const { Wallet } = require('../ts_build/wallet');

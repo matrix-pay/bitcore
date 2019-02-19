@@ -7,7 +7,7 @@ var Buffers = require('buffers');
 var P2P = require('../../');
 var Messages = P2P.Messages;
 var messages = new Messages();
-var bitcore = require('bitcore-lib-cash');
+var bitcore = require('bitcore-lib-matrixbit');
 var Data = require('../data/messages'); //todo merge with commandData
 var commandData = require('../data/messages.json');
 

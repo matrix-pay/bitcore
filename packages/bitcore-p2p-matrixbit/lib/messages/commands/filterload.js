@@ -2,7 +2,7 @@
 
 var Message = require('../message');
 var inherits = require('util').inherits;
-var bitcore = require('bitcore-lib-cash');
+var bitcore = require('bitcore-lib-matrixbit');
 var BufferUtil = bitcore.util.buffer;
 var BloomFilter = require('../../bloomfilter');
 var $ = bitcore.util.preconditions;

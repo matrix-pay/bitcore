@@ -82,13 +82,13 @@ const Config = function(): ConfigType {
   config = _.mergeWith(config, foundConfig, mergeCopyArray);
   if (!Object.keys(config.chains).length) {
     Object.assign(config.chains, {
-      BTC: {
+      MXBIT: {
         mainnet: {
           chainSource: 'p2p',
-          trustedPeers: [{ host: '127.0.0.1', port: 8333 }],
+          trustedPeers: [{ host: '127.0.0.1', port: 7888 }],
           rpc: {
             host: '127.0.0.1',
-            port: 8332,
+            port: 7887,
             username: 'bitcoin',
             password: 'bitcoin'
           }
