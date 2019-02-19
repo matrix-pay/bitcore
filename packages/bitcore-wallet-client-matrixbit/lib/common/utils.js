@@ -9,6 +9,7 @@ var Bitcore = require('bitcore-lib');
 var Bitcore_ = {
   btc: Bitcore,
   bch: require('bitcore-lib-cash'),
+  MXBIT: require('bitcore-lib-matrixbit'),
 };
 var PrivateKey = Bitcore.PrivateKey;
 var PublicKey = Bitcore.PublicKey;
@@ -156,14 +157,14 @@ Utils.deriveAddress = function(scriptType, publicKeyRing, path, m, network, coin
   }
 
   return {
-    address: coin == 'bch' ?  bitcoreAddress.toLegacyAddress() : bitcoreAddress.toString(),
+    address: coin !== 'btc' ?  bitcoreAddress.toLegacyAddress() : bitcoreAddress.toString(),
     path: path,
     publicKeys: _.invokeMap(publicKeys, 'toString'),
   };
 };
 
 Utils.xPubToCopayerId = function(coin, xpub) {
-  var str = coin == 'btc' ? xpub : coin + xpub;
+  var str = coin === 'btc' ? xpub : coin + xpub;
   var hash = sjcl.hash.sha256.hash(str);
   return sjcl.codec.hex.fromBits(hash);
 };

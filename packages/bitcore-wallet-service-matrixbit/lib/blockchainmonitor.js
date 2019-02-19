@@ -160,7 +160,7 @@ BlockchainMonitor.prototype._handleIncomingPayments = function(coin, network, da
       var addr = _.keys(v)[0];
       var amount = +v[addr];
 
-      // This is because a bug on insight-mxbit, that always return no copay addr
+      // This is because a bug on insight, that always return no copay addr
       if (coin == 'bch' && Utils.getAddressCoin(addr) !='bch') {
         addr = Utils.translateAddress(addr, coin);
       }
@@ -182,7 +182,7 @@ BlockchainMonitor.prototype._handleIncomingPayments = function(coin, network, da
   }
     async.each(outs, function(out, next) {
 
-      if (!out.address)
+      if (!out.address) 
         return next();
 
     // toDo, remove coin  here: no more same address for diff coins

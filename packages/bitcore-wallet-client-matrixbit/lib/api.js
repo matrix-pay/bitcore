@@ -9,6 +9,7 @@ var Bitcore = require('bitcore-lib');
 var Bitcore_ = {
   btc: Bitcore,
   bch: require('bitcore-lib-cash'),
+  MXBIT: require('bitcore-lib-matrixbit'),
 };
 var Mnemonic = require('bitcore-mnemonic');
 var sjcl = require('sjcl');
@@ -646,11 +647,11 @@ API.prototype.getBalanceFromPrivateKey = function(privateKey, coin, cb) {
     coin = 'btc';
   }
   var B = Bitcore_[coin];
- 
+
   var privateKey = new B.PrivateKey(privateKey);
   var address = privateKey.publicKey.toAddress();
   self.getUtxos({
-    addresses: coin == 'bch' ? address.toLegacyAddress() : address.toString(),
+    addresses: coin !== 'btc' ? address.toLegacyAddress() : address.toString(),
   }, function(err, utxos) {
     if (err) return cb(err);
     return cb(null, _.sumBy(utxos, 'satoshis'));
@@ -671,7 +672,7 @@ API.prototype.buildTxFromPrivateKey = function(privateKey, destinationAddress, o
 
     function(next) {
       self.getUtxos({
-        addresses: coin == 'bch' ?  address.toLegacyAddress() : address.toString(),
+        addresses: coin !== 'btc' ?  address.toLegacyAddress() : address.toString(),
       }, function(err, utxos) {
         return next(err, utxos);
       });
@@ -1005,7 +1006,7 @@ API.signTxp = function(txp, derivedXPrivKey) {
 
   var t = Utils.buildTx(txp);
 
-  var signatures = _.map(privs, function(priv, i) { 
+  var signatures = _.map(privs, function(priv, i) {
     return t.getSignatures(priv);
   });
 
@@ -1241,7 +1242,7 @@ API.prototype.decryptPrivateKey = function(password) {
 API.prototype.getFeeLevels = function(coin, network, cb) {
   var self = this;
 
-  $.checkArgument(coin || _.includes(['btc', 'bch'], coin));
+  $.checkArgument(coin || _.includes(['btc', 'bch', 'MXBIT'], coin));
   $.checkArgument(network || _.includes(['livenet', 'testnet'], network));
 
   self._doGetRequest('/v2/feelevels/?coin=' + (coin || 'btc') + '&network=' + (network || 'livenet'), function(err, result) {
@@ -1292,7 +1293,7 @@ API.prototype.createWallet = function(walletName, copayerName, m, n, opts, cb) {
   opts = opts || {};
 
   var coin = opts.coin || 'btc';
-  if (!_.includes(['btc', 'bch'], coin)) return cb(new Error('Invalid coin'));
+  if (!_.includes(['btc', 'bch', 'MXBIT'], coin)) return cb(new Error('Invalid coin'));
 
   var network = opts.network || 'livenet';
   if (!_.includes(['testnet', 'livenet'], network)) return cb(new Error('Invalid network'));
@@ -1373,7 +1374,7 @@ API.prototype.joinWallet = function(secret, copayerName, opts, cb) {
   opts = opts || {};
 
   var coin = opts.coin || 'btc';
-  if (!_.includes(['btc', 'bch'], coin)) return cb(new Error('Invalid coin'));
+  if (!_.includes(['btc', 'bch', 'MXBIT'], coin)) return cb(new Error('Invalid coin'));
 
   try {
     var secretData = API.parseSecret(secret);
@@ -1651,12 +1652,12 @@ API.prototype.savePreferences = function(preferences, cb) {
 API.prototype.fetchPayPro = function(opts, cb) {
   $.checkArgument(opts)
     .checkArgument(opts.payProUrl);
- 
+
   PayPro.get({
     url: opts.payProUrl,
     http: this.payProHttp,
     coin: this.credentials.coin || 'btc',
-  }, function(err, paypro) { 
+  }, function(err, paypro) {
     if (err)
       return cb(err);
 
@@ -1867,7 +1868,7 @@ API.prototype.getBalance = function(opts, cb) {
   var args = [];
   if (opts.twoStep) args.push('?twoStep=1');
   if (opts.coin) {
-    if (!_.includes(['btc', 'bch'], opts.coin)) return cb(new Error('Invalid coin'));
+    if (!_.includes(['btc', 'bch', 'MXBIT'], opts.coin)) return cb(new Error('Invalid coin'));
     args.push('coin=' + opts.coin);
   }
   var qs = '';
@@ -2073,7 +2074,7 @@ API.signTxProposalFromAirGapped = function(key, txp, unencryptedPkr, m, n, opts)
   opts = opts || {}
 
   var coin = opts.coin || 'btc';
-  if (!_.includes(['btc', 'bch'], coin)) return cb(new Error('Invalid coin'));
+  if (!_.includes(['btc', 'bch', 'MXBIT'], coin)) return cb(new Error('Invalid coin'));
 
   var publicKeyRing = JSON.parse(unencryptedPkr);
 

@@ -5,6 +5,7 @@ var Constants = {};
 Constants.COINS = {
   BTC: 'btc',
   BCH: 'bch',
+  MXBIT: 'MXBIT'
 };
 
 

@@ -10,10 +10,12 @@ const request = require('request-promise-native');
 var Common = require('../common');
 var Client;
 var BCHAddressTranslator = require('../bchaddresstranslator');
+var MXBITAddressTranslator = require('../mxbitaddresstranslator');
 var Bitcore = require('bitcore-lib');
 var Bitcore_ = {
   btc: Bitcore,
-  bch: require('bitcore-lib-cash')
+  bch: require('bitcore-lib-cash'),
+  MXBIT: require('bitcore-lib-matrixbit')
 };
 
 var Constants = Common.Constants,
@@ -32,13 +34,13 @@ function V8(opts) {
   $.checkArgument(Utils.checkValueInCollection(opts.coin, Constants.COINS));
   $.checkArgument(opts.url);
 
-  this.apiPrefix = _.isUndefined(opts.apiPrefix)? '/api' : opts.apiPrefix; 
+  this.apiPrefix = _.isUndefined(opts.apiPrefix)? '/api' : opts.apiPrefix;
   this.coin = opts.coin || Defaults.COIN;
   this.network = opts.network || 'livenet';
   this.v8network = v8network(this.network);
 
   //v8 is always cashaddr
-  this.addressFormat =  this.coin == 'bch' ? 'cashaddr' : null;
+  this.addressFormat =  this.coin == 'btc' ? null : 'cashaddr';
 
 
   var coin  = this.coin.toUpperCase();
@@ -69,16 +71,22 @@ var _parseErr = function(err, res) {
 // Translate Request Address query
 V8.prototype.translateQueryAddresses = function(addresses) {
   if (!this.addressFormat) return addresses;
-
-  return BCHAddressTranslator.translate(addresses, this.addressFormat, 'copay');
+  if(this.coin === 'bch'){
+    return BCHAddressTranslator.translate(addresses, this.addressFormat, 'copay');
+  } else if(this.coin === 'MXBIT'){
+    return MXBITAddressTranslator.translate(addresses, this.addressFormat, 'copay');
+  }
 };
 
 
 // Translate Result Address
 V8.prototype.translateResultAddresses = function(addresses) {
   if (!this.addressFormat) return addresses;
-
-  return BCHAddressTranslator.translate(addresses, 'copay', this.addressFormat);
+  if(this.coin === 'bch') {
+    return BCHAddressTranslator.translate(addresses, 'copay', this.addressFormat);
+  } else if(this.coin === 'MXBIT'){
+    return MXBITAddressTranslator.translate(addresses, 'copay', this.addressFormat);
+  }
 };
 
 
@@ -123,12 +131,12 @@ V8.prototype.addAddresses = function (wallet, addresses, cb) {
     return {
       address: a,
     }
-  }); 
+  });
 
   var k = 'addAddresses'+addresses.length;
   console.time(k);
-  client.importAddresses({ 
-    payload: payload, 
+  client.importAddresses({
+    payload: payload,
     pubKey: wallet.beAuthPublicKey2,
   })
     .then( ret => {
@@ -150,13 +158,13 @@ V8.prototype.register = function (wallet, cb) {
 
   var client = this._getAuthClient(wallet);
   const payload = {
-    name: wallet.id, 
+    name: wallet.id,
     pubKey: wallet.beAuthPublicKey2,
     network: this.v8network,
     chain: this.coin,
   };
   client.register({
-    authKey: wallet.beAuthPrivateKey2, 
+    authKey: wallet.beAuthPrivateKey2,
     payload: payload}
   )
     .then((ret) => {
@@ -277,14 +285,14 @@ console.log('[v8.js.207] GET TX', txid); //TODO
       }
       return cb(null, tx);
     })
-    .catch((err) =>{ 
+    .catch((err) =>{
       // The TX was not found
       if (err.statusCode == '404') {
         return cb();
       } else {
         return cb(err);
       }
-      
+
     });
 };
 
@@ -351,7 +359,7 @@ console.time('V8 getTxs');
 
       if (tx.height>=0)
         txs.push(tx);
-      else 
+      else
         unconf.push(tx);
     })
     console.timeEnd("V8 getTxs");
@@ -458,18 +466,26 @@ V8.prototype.initSocket = function(callbacks) {
     if (!data.address) return;
     var out;
     try {
-      let addr = self.coin == 'bch' ? BCHAddressTranslator.translate(data.address, 'copay', 'cashaddr') : data.address;
-      out = { 
+      let addr = self.coin === 'bch' ? BCHAddressTranslator.translate(data.address, 'copay', 'cashaddr') : data.address;
+      out = {
         address: data.address,
         amount: data.value / 1e8,
       };
     } catch (e) {
-      // non parsable address
-      return;
+      try {
+        let addr = self.coin === 'MXBIT' ? MXBITAddressTranslator.translate(data.address, 'copay', 'cashaddr') : data.address;
+        out = {
+          address: data.address,
+          amount: data.value / 1e8,
+        };
+      } catch (e) {
+        // non parsable address
+        return;
+      }
     }
-    return callbacks.onIncomingPayments({outs: [out], txid: data.mintTxid}); 
+    return callbacks.onIncomingPayments({outs: [out], txid: data.mintTxid});
   });
- 
+
   return socket;
 };
 

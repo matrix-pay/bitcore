@@ -11,6 +11,8 @@ var provider = {
         value: d.rate,
       };
     }));
+    var MX = { code: 'MXBIT', value: 0.000029 };
+    rates.push(MX);
     return rates;
   },
 };

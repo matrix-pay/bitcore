@@ -10,7 +10,8 @@ var Utils = {};
 var Bitcore = require('bitcore-lib');
 var Bitcore_ = {
   btc: Bitcore,
-  bch: require('bitcore-lib-cash')
+  bch: require('bitcore-lib-cash'),
+  MXBIT: require('bitcore-lib-matrixbit')
 };
 
 
@@ -114,6 +115,11 @@ Utils.formatAmount = function(satoshis, unit, opts) {
       minDecimals: 0,
     },
     bch: {
+      toSatoshis: 100000000,
+      maxDecimals: 6,
+      minDecimals: 2,
+    },
+    MXBIT: {
       toSatoshis: 100000000,
       maxDecimals: 6,
       minDecimals: 2,
@@ -229,7 +235,10 @@ Utils.getAddressCoin = function(address) {
       new Bitcore_['bch'].Address(address);
       return 'bch';
     } catch (e) {
-      return;
+      try {
+        new Bitcore_['MXBIT'].Address(address);
+        return 'MXBIT';
+      } catch (e) {  }
     }
   }
 };
@@ -239,8 +248,14 @@ Utils.translateAddress = function(address, coin) {
   var origAddress = new Bitcore_[origCoin].Address(address);
   var origObj = origAddress.toObject();
 
-  var result = Bitcore_[coin].Address.fromObject(origObj)
-  return coin == 'bch' ? result.toLegacyAddress() : result.toString();
+  var result = Bitcore_[coin].Address.fromObject(origObj);
+  if(coin === 'bch'){
+    return result.toLegacyAddress();
+  } else if(coin === 'MXBIT'){
+    return result.toLegacyAddress();
+  } else {
+    return result.toString();
+  }
 };
 
 

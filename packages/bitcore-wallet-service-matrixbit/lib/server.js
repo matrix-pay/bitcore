@@ -6,7 +6,7 @@ var async = require('async');
 var log = require('npmlog');
 var serverMessages = require('../serverMessages');
 var BCHAddressTranslator = require('./bchaddresstranslator');
-
+var MXBITAddressTranslator = require('./mxbitaddresstranslator');
 log.debug = log.verbose;
 log.disableColor();
 
@@ -16,7 +16,8 @@ var Stringify = require('json-stable-stringify');
 var Bitcore = require('bitcore-lib');
 var Bitcore_ = {
   btc: Bitcore,
-  bch: require('bitcore-lib-cash')
+  bch: require('bitcore-lib-cash'),
+  MXBIT: require('bitcore-lib-matrixbit')
 };
 
 var Common = require('./common');
@@ -505,22 +506,36 @@ WalletService.prototype.getWallet = function(opts, cb) {
     if (!wallet) return cb(Errors.WALLET_NOT_FOUND);
 
     // cashAddress migration
-    if (wallet.coin != 'bch' || wallet.nativeCashAddr)
+    if (wallet.coin === 'btc' || wallet.nativeCashAddr)
       return cb(null, wallet);
 
     // only for testing
     if (opts.doNotMigrate) return cb(null, wallet);
 
     // remove someday...
-    log.info(`Migrating wallet ${wallet.id} to cashAddr`);
-    self.storage.migrateToCashAddr(self.walletId,(e)=> {
-      if (e) return cb(e);
-      wallet.nativeCashAddr=true;
-      return self.storage.storeWallet(wallet, (e)=> {
+    if(wallet.coin === 'bch'){
+      log.info(`Migrating wallet ${wallet.id} to cashAddr`);
+      self.storage.migrateToCashAddr(self.walletId,(e)=> {
         if (e) return cb(e);
-        return cb(e, wallet);
+        wallet.nativeCashAddr=true;
+        return self.storage.storeWallet(wallet, (e)=> {
+          if (e) return cb(e);
+          return cb(e, wallet);
+        });
       });
-    });
+    }
+
+    if(wallet.coin === 'MXBIT') {
+      log.info(`Migrating wallet ${wallet.id} to cashAddr (MXBIT)`);
+      self.storage.migrateToMatrixAddr(self.walletId, (e) => {
+        if (e) return cb(e);
+        wallet.nativeCashAddr = true;
+        return self.storage.storeWallet(wallet, (e) => {
+          if (e) return cb(e);
+          return cb(e, wallet);
+        });
+      });
+    }
   });
 };
 
@@ -1157,8 +1172,12 @@ WalletService.prototype.createAddress = function(opts, cb) {
             return cb(err);
           }
 
-          if (wallet.coin == 'bch' && opts.noCashAddr) {
+          if (wallet.coin === 'bch' && opts.noCashAddr) {
             address.address = BCHAddressTranslator.translate(address.address, 'copay');
+          }
+
+          if (wallet.coin === 'MXBIT' && opts.noCashAddr) {
+            address.address = MXBITAddressTranslator.translate(address.address, 'copay');
           }
 
           return cb(err, address);
@@ -2070,13 +2089,18 @@ WalletService.prototype._validateAddr = function(wallet, inaddr, opts) {
   } catch (ex) {
     return Errors.INVALID_ADDRESS;
   }
-  if (addr.network.toString() != wallet.network) {
+  if (addr.network.toString() !== wallet.network) {
     return Errors.INCORRECT_ADDRESS_NETWORK;
   }
 
-  if (wallet.coin == 'bch' && !opts.noCashAddr) {
-    if (addr.toString(true) !=  inaddr)
+  if (wallet.coin === 'bch' && !opts.noCashAddr) {
+    if (addr.toString(true) !==  inaddr)
     return Errors.ONLY_CASHADDR;
+  }
+
+  if (wallet.coin === 'MXBIT' && !opts.noCashAddr) {
+    if (addr.toString(true) !==  inaddr)
+      return Errors.ONLY_CASHADDR;
   }
 
   return;
@@ -2180,7 +2204,7 @@ WalletService.prototype._validateAndSanitizeTxOpts = function(wallet, opts, cb) 
     },
     function(next) {
       // check outputs are on 'copay' format for BCH
-      if (wallet.coin != 'bch') return next();
+      if (wallet.coin == 'btc') return next();
       if (!opts.noCashAddr) return next();
 
       // TODO remove one cashaddr is used internally (noCashAddr flag)?
@@ -2202,7 +2226,11 @@ WalletService.prototype._validateAndSanitizeTxOpts = function(wallet, opts, cb) 
         try {
           newAddr = Bitcore_['bch'].Address(x.toAddress).toLegacyAddress();
         } catch (e) {
-          return next(e);
+          try {
+            newAddr = Bitcore_['MXBIT'].Address(x.toAddress).toLegacyAddress();
+          } catch (e) {
+            return next(e);
+          }
         }
         if (x.txAddress != newAddr) {
           x.toAddress = newAddr;
@@ -2380,10 +2408,17 @@ WalletService.prototype.createTx = function(opts, cb) {
 
             if (opts.dryRun) return next();
 
-            if (txp.coin == 'bch') {
+            if (txp.coin === 'bch') {
 
               if (opts.noCashAddr && txp.changeAddress) {
                 txp.changeAddress.address= BCHAddressTranslator.translate(txp.changeAddress.address,'copay');
+              }
+            }
+
+            if (txp.coin === 'MXBIT') {
+
+              if (opts.noCashAddr && txp.changeAddress) {
+                txp.changeAddress.address= MXBITAddressTranslator.translate(txp.changeAddress.address,'copay');
               }
             }
 
@@ -2393,12 +2428,19 @@ WalletService.prototype.createTx = function(opts, cb) {
         ], function(err) {
           if (err) return cb(err);
 
-            if (txp.coin == 'bch') {
+            if (txp.coin === 'bch') {
               if (opts.returnOrigAddrOutputs) {
                 log.info('Returning Orig BCH address outputs for compat');
                 txp.outputs = opts.origAddrOutputs;
               }
             }
+
+          if (txp.coin === 'MXBIT') {
+            if (opts.returnOrigAddrOutputs) {
+              log.info('Returning Orig MXBIT address outputs for compat');
+              txp.outputs = opts.origAddrOutputs;
+            }
+          }
 
 
           return cb(null, txp);
@@ -2484,9 +2526,15 @@ WalletService.prototype.publishTx = function(opts, cb) {
             self._notifyTxProposalAction('NewTxProposal', txp, function() {
 
 
-              if (opts.noCashAddr && txp.coin == 'bch') {
+              if (opts.noCashAddr && txp.coin === 'bch') {
                 if (txp.changeAddress) {
                   txp.changeAddress.address= BCHAddressTranslator.translate(txp.changeAddress.address,'copay');
+                }
+              }
+
+              if (opts.noCashAddr && txp.coin === 'MXBIT') {
+                if (txp.changeAddress) {
+                  txp.changeAddress.address= MXBITAddressTranslator.translate(txp.changeAddress.address,'copay');
                 }
               }
 
@@ -2919,7 +2967,7 @@ WalletService.prototype.getPendingTxs = function(opts, cb) {
         return txp.status == 'broadcasted';
       })
 
-      if (opts.noCashAddr && txps[0] && txps[0].coin == 'bch') {
+      if (opts.noCashAddr && txps[0] && txps[0].coin === 'bch') {
 console.log('## [server.js.2989]'); //TODO
         _.each(txps, (x) => {
           if (x.changeAddress) {
@@ -2928,6 +2976,20 @@ console.log('## [server.js.2989]'); //TODO
           _.each(x.outputs, (x) => {
             if (x.toAddress) {
               x.toAddress= BCHAddressTranslator.translate(x.toAddress,'copay');
+            }
+          });
+        });
+      }
+
+      if (opts.noCashAddr && txps[0] && txps[0].coin === 'MXBIT') {
+        console.log('## [server.js.2989]'); //TODO
+        _.each(txps, (x) => {
+          if (x.changeAddress) {
+            x.changeAddress.address= MXBITAddressTranslator.translate(x.changeAddress.address,'copay');
+          }
+          _.each(x.outputs, (x) => {
+            if (x.toAddress) {
+              x.toAddress= MXBITAddressTranslator.translate(x.toAddress,'copay');
             }
           });
         });
@@ -3210,7 +3272,7 @@ WalletService.prototype.checkWalletSync = function(bc, wallet, cb) {
     }
 
     // TODO remove on native bch addr
-    self.storage.walletCheck({walletId: wallet.id, bch: wallet.coin == 'bch'})
+    self.storage.walletCheck({walletId: wallet.id, bch: wallet.coin !== 'btc', coin: wallet.coin})
       .then( (localCheck) => {
         bc.getCheckData(wallet, (err, serverCheck) => {
 
@@ -3221,7 +3283,7 @@ WalletService.prototype.checkWalletSync = function(bc, wallet, cb) {
             return cb();
           }
 
-          var isOK = serverCheck.sum == localCheck.sum;
+          var isOK = serverCheck.sum === localCheck.sum;
 
           if (isOK) {
             log.debug('Wallet Sync Check OK');
@@ -3655,7 +3717,7 @@ WalletService.prototype.getTxHistory = function(opts, cb) {
   var bc;
   opts = opts || {};
 
-  // 50 is accepted by insight-mxbit.
+  // 50 is accepted by insight.
   // TODO move it to a bigger number with v8 is fully deployed
   opts.limit = (_.isUndefined(opts.limit) ? 50 : opts.limit);
   if (opts.limit > Defaults.HISTORY_LIMIT)

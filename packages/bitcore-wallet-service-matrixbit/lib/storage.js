@@ -15,6 +15,7 @@ var Model = require('./model');
 
 // only for migration
 var BCHAddressTranslator = require('./bchaddresstranslator');
+var MXBITAddressTranslator = require('./mxbitaddresstranslator');
 
 var collections = {
   WALLETS: 'wallets',
@@ -502,7 +503,7 @@ Storage.prototype.migrateToCashAddr = function(walletId, cb) {
   cursor.on("end", function() {
     console.log(`Migration to cash address of ${walletId} Finished`);
     return self.clearWalletCache(walletId,cb);
-  }); 
+  });
 
   cursor.on("err", function(err) {
     return cb(err);
@@ -522,6 +523,36 @@ Storage.prototype.migrateToCashAddr = function(walletId, cb) {
   });
 };
 
+Storage.prototype.migrateToMatrixAddr = function(walletId, cb) {
+  var self = this;
+
+  var cursor = self.db.collection(collections.ADDRESSES).find({
+    walletId: walletId,
+  });
+
+
+  cursor.on("end", function() {
+    console.log(`Migration to Matrix address of ${walletId} Finished`);
+    return self.clearWalletCache(walletId,cb);
+  });
+
+  cursor.on("err", function(err) {
+    return cb(err);
+  });
+
+  cursor.on("data", function(doc) {
+    cursor.pause();
+    let x;
+    try {
+      x = MXBITAddressTranslator.translate(doc.address, 'cashaddr');
+    } catch (e) {
+      return cb(e);
+    }
+
+    self.db.collection(collections.ADDRESSES).update({_id: doc._id}, {$set:{address: x}}, {multi:true});
+    cursor.resume();
+  });
+};
 
 Storage.prototype.fetchUnsyncAddresses = function(walletId, cb) {
   var self = this;
@@ -570,7 +601,7 @@ Storage.prototype.storeAddress = function(address, cb) {
 Storage.prototype.markSyncedAddresses = function(addresses, cb) {
   var self = this;
   self.db.collection(collections.ADDRESSES).update({
-    address: { '$in': addresses }, 
+    address: { '$in': addresses },
   }, { '$set': { beRegistered: true }} , {
     w: 1,
     upsert: false,
@@ -587,7 +618,7 @@ Storage.prototype.deregisterWallet = function(walletId, cb) {
   }, { '$set': { beRegistered: null }} , {
     w: 1,
     upsert: false,
-  }, function () { 
+  }, function () {
     self.db.collection(collections.ADDRESSES).update({
       walletId:  walletId
     }, { '$set': { beRegistered: null }} , {
@@ -635,7 +666,7 @@ Storage.prototype.fetchAddressesByWalletId = function(walletId, addresses, cb) {
 
   this.db.collection(collections.ADDRESSES).find({
     walletId: walletId,
-    address: { '$in': addresses }, 
+    address: { '$in': addresses },
   }, {address: true, isChange: true} ).toArray(function(err, result) {
     if (err) return cb(err);
     if (!result) return cb();
@@ -786,7 +817,7 @@ Storage.prototype.setWalletAddressChecked = function(walletId, totalAddresses, c
     upsert: true,
   }, cb);
 };
- 
+
 
 // Since cache TX are "hard confirmed" skip, and limit
 // should be reliable to query the database.
@@ -813,9 +844,9 @@ Storage.prototype.getTxHistoryCacheV8 = function(walletId, skip, limit, cb) {
       var firstPosition = cacheStatus.tipIndex - skip - limit + 1;
       var lastPosition = cacheStatus.tipIndex - skip + 1;
 
-      if (firstPosition < 0) 
+      if (firstPosition < 0)
         firstPosition=0;
-      if (lastPosition <= 0) 
+      if (lastPosition <= 0)
         return cb(null, []);
 
       console.log('[storage.js.750:first/lastPosition:]',firstPosition + '/'+lastPosition); //TODO
@@ -901,7 +932,7 @@ Storage.prototype.getTxHistoryStreamV8 = function(walletId, cb) {
 
 
 /*
- * @param {string} [opts.walletId] - The wallet id to use as current wallet 
+ * @param {string} [opts.walletId] - The wallet id to use as current wallet
  * @param {tipIndex} [integer] - Last tx index of the current cache
  * @param {array} [items] - The items (transactions) to store
  * @param {updateHeight} [integer] - The blockchain height up to which the transactions where queried, with CONFIRMATIONS_TO_START_CACHING subtracted.
@@ -1199,13 +1230,13 @@ Storage.prototype.checkAndUseGlobalCache = function(key, duration, cb) {
 
 Storage.prototype.storeGlobalCache = function (key, values, cb) {
   var now = Date.now();
-  this.db.collection(collections.CACHE).update({ 
+  this.db.collection(collections.CACHE).update({
     key: key,
     walletId: null,
     type: null,
   }, {
     "$set":
-    { 
+    {
       ts: now,
       result: values,
     }
@@ -1217,7 +1248,7 @@ Storage.prototype.storeGlobalCache = function (key, values, cb) {
 
 Storage.prototype.clearGlobalCache = function (key, cb) {
   var now = Date.now();
-  this.db.collection(collections.CACHE).remove({ 
+  this.db.collection(collections.CACHE).remove({
     key: key,
     walletId: null,
     type: null,
@@ -1228,7 +1259,7 @@ Storage.prototype.clearGlobalCache = function (key, cb) {
 
 
 Storage.prototype.walletCheck = async function(params) {
-  let { walletId, bch } = params;
+  let { walletId, bch, coin } = params;
   var self = this;
 
   return new Promise(resolve => {
@@ -1243,8 +1274,14 @@ Storage.prototype.walletCheck = async function(params) {
 
         // TODO remove on native cashaddr
         if (bch) {
-          addr = BCHAddressTranslator.translate(addr, 'cashaddr', 'copay');
-          $.checkState(addr, 'ERROR: wrong addr format on DB for wallet:' + walletId);
+          if(coin === 'bch'){
+            addr = BCHAddressTranslator.translate(addr, 'cashaddr', 'copay');
+            $.checkState(addr, 'ERROR: wrong addr format on DB for wallet:' + walletId);
+          } else if(coin === 'MXBIT'){
+            addr = MXBITAddressTranslator.translate(addr, 'cashaddr', 'copay');
+            $.checkState(addr, 'ERROR: wrong addr format on DB for wallet:' + walletId);
+          }
+
         }
 
         lastAddress = addr;

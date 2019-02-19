@@ -3,9 +3,10 @@ var Bitcore = require('bitcore-lib');
 var Bitcore_ = {
   btc: Bitcore,
   bch: require('bitcore-lib-cash'),
+  MXBIT: require('bitcore-lib-matrixbit'),
 };
 
-var BitcorePayPro = require('bitcore-payment-protocol');
+var BitcorePayPro = require('bitcore-payment-protocol-matrixbit');
 var PayPro = {};
 
 PayPro._nodeRequest = function(opts, cb) {
@@ -166,7 +167,7 @@ PayPro.get = function(opts, cb) {
       memo: pd.get('memo'),
       time: pd.get('time'),
       merchant_data: md,
-      toAddress: coin == 'bch' ? addr.toLegacyAddress() : addr.toString(),
+      toAddress: coin !== 'btc' ? addr.toLegacyAddress() : addr.toString(),
       amount: amount,
       network: network,
       domain: opts.host,
@@ -174,7 +175,7 @@ PayPro.get = function(opts, cb) {
     };
 
     var requiredFeeRate = pd.get('required_fee_rate');
-    if (requiredFeeRate) 
+    if (requiredFeeRate)
       ret.requiredFeeRate = requiredFeeRate;
 
     return cb(null, ret);

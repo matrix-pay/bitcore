@@ -49,7 +49,7 @@ function Credentials() {
 };
 
 function _checkCoin(coin) {
-  if (!_.includes(['btc', 'bch'], coin)) throw new Error('Invalid coin');
+  if (!_.includes(['btc', 'bch', 'MXBIT'], coin)) throw new Error('Invalid coin');
 };
 
 function _checkNetwork(network) {
@@ -224,20 +224,20 @@ Credentials.prototype._expand = function() {
 
    * For RO software wallets  (MUST provide `entropySourceHex`)
    *
-      entropySourceHex -> (hashx2) entropySource 
+      entropySourceHex -> (hashx2) entropySource
 
       xPubKey -> (+ coin) copayerId
       entropySource   -> reqPrivKey
                       -> personalEncryptingKey
 
    * For Hardware wallets
-      entropySourcePath -> (+hw xPub derivation)  entropySource 
+      entropySourcePath -> (+hw xPub derivation)  entropySource
 
       xPubKey -> (+ coin) copayerId
       entropySource   -> reqPrivKey
                       -> personalEncryptingKey
- 
- 
+
+
   */
 
   var network = Credentials._getNetworkFromExtendedKey(this.xPrivKey || this.xPubKey);
@@ -259,7 +259,7 @@ Credentials.prototype._expand = function() {
   }
 
   // requests keys from mnemonics, but using a xPubkey
-  // This is only used when importing mnemonics FROM 
+  // This is only used when importing mnemonics FROM
   // an hwwallet, in which xPriv was not available when
   // the wallet was created.
   if (this.entropySourcePath) {
@@ -487,7 +487,7 @@ Credentials.prototype.clearMnemonic = function() {
 
 Credentials.fromOldCopayWallet = function(w) {
   function walletPrivKeyFromOldCopayWallet(w) {
-    // IN BWS, the master Pub Keys are not sent to the server, 
+    // IN BWS, the master Pub Keys are not sent to the server,
     // so it is safe to use them as seed for wallet's shared secret.
     var seed = w.publicKeyRing.copayersExtPubKeys.sort().join('');
     var seedBuf = new Buffer(seed);
@@ -514,7 +514,7 @@ Credentials.fromOldCopayWallet = function(w) {
       requestDerivation = (new Bitcore.HDPrivateKey(credentials.xPrivKey))
         .deriveChild(path).hdPublicKey;
     } else {
-      // this 
+      // this
       var path = Constants.PATHS.REQUEST_KEY_AUTH;
       requestDerivation = (new Bitcore.HDPublicKey(xPubStr)).deriveChild(path);
     }

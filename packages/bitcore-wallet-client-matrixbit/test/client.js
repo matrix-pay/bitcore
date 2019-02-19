@@ -21,9 +21,9 @@ var Bitcore_ = {
 };
 
 
-var BitcorePayPro = require('bitcore-payment-protocol');
+var BitcorePayPro = require('bitcore-payment-protocol-matrixbit');
 
-var BWS = require('bitcore-wallet-service');
+var BWS = require('bitcore-wallet-service-matrixbit');
 
 var Common = require('../lib/common');
 var Constants = Common.Constants;
@@ -208,7 +208,7 @@ blockchainExplorerMock.getAddressUtxos = function(address, height,  cb) {
   var selected = _.filter(blockchainExplorerMock.utxos, function(utxo) {
     return _.includes(address, utxo.address);
   });
- 
+
   return cb(null, _.cloneDeep(selected));
 };
 
@@ -272,7 +272,7 @@ function createTxsV8(nr, bcHeight, txs) {
         size: 226,
         category: 'receive',
         satoshis: 30001,
-        // this is translated on V8.prototype.getTransactions 
+        // this is translated on V8.prototype.getTransactions
         amount: 30001 /1e8,
         height: (i == 0) ? -1 :  bcHeight - i + 1,
         address: 'muFJi3ZPfR5nhxyD7dfpx2nYZA8Wmwzgck',
@@ -1281,7 +1281,7 @@ describe('client API', function() {
       });
     });
 
- 
+
 
     it('should check balance in a 1-1 ', function(done) {
       helpers.createAndJoinWallet(clients, 1, 1, function() {
@@ -2543,7 +2543,7 @@ describe('client API', function() {
         });
       });
     });
- 
+
     it('Should encrypt proposal message', function(done) {
       var opts = {
         outputs: [{
@@ -2657,7 +2657,7 @@ describe('client API', function() {
             address.address = Bitcore_['bch'].Address(address.address).toString(true);
           }
           // ==
-          
+
           blockchainExplorerMock.setUtxo(address, 2, 2);
           blockchainExplorerMock.setUtxo(address, 2, 2);
           blockchainExplorerMock.setUtxo(address, 1, 2, 0);
@@ -3189,7 +3189,7 @@ describe('client API', function() {
 
 
     describe('1-of-1 BCH wallet', function() {
-      
+
       // note this is using BCH with BTC format testnet address
       beforeEach(function(done) {
         http = sinon.stub();
@@ -4355,7 +4355,7 @@ describe('client API', function() {
     });
 
     describe('Recovery', function() {
-      var db2; 
+      var db2;
       before( (done) => {
         helpers.newDb(2,(err,in_db) => {
           db2 = in_db;
@@ -4948,7 +4948,7 @@ describe('client API', function() {
   });
 
   describe('Legacy Copay Import', function() {
-    var db2; 
+    var db2;
     before( (done) => {
       helpers.newDb(2,(err,in_db) => {
         db2 = in_db;
@@ -5564,7 +5564,7 @@ describe('client API', function() {
         };
         helpers.createAndJoinWallet(clients, 1, 1,  {coin: coin, network: 'livenet'}, function() {
           blockchainExplorerMock.setUtxo(address, 123, 1);
-          clients[0].buildTxFromPrivateKey('5KjBgBiadWGhjWmLN1v4kcEZqWSZFqzgv7cSUuZNJg4tD82c4xp', addr[1], { 
+          clients[0].buildTxFromPrivateKey('5KjBgBiadWGhjWmLN1v4kcEZqWSZFqzgv7cSUuZNJg4tD82c4xp', addr[1], {
             coin: coin
           }, function(err, tx) {
             should.not.exist(err);

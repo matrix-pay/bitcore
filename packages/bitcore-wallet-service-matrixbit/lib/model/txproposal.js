@@ -10,6 +10,7 @@ log.disableColor();
 var Bitcore = {
   'btc': require('bitcore-lib'),
   'bch': require('bitcore-lib-cash'),
+  'MXBIT': require('bitcore-lib-matrixbit'),
 };
 
 var Common = require('../common');
@@ -130,7 +131,7 @@ TxProposal.prototype.setInputs = function(inputs) {
 };
 
 TxProposal.prototype._updateStatus = function() {
-  if (this.status != 'pending') return;
+  if (this.status !== 'pending') return;
 
   if (this.isRejected()) {
     this.status = 'rejected';
@@ -181,7 +182,7 @@ TxProposal.prototype._buildTx = function() {
     var outputOrder = _.reject(self.outputOrder, function(order) {
       return order >= t.outputs.length;
     });
-    $.checkState(t.outputs.length == outputOrder.length);
+    $.checkState(t.outputs.length === outputOrder.length);
     t.sortOutputs(function(outputs) {
       return _.map(outputOrder, function(i) {
         return outputs[i];
@@ -327,7 +328,7 @@ TxProposal.prototype._addSignaturesToBitcoreTx = function(tx, signatures, xpub) 
 
   var bitcore = Bitcore[self.coin];
 
-  if (signatures.length != this.inputs.length)
+  if (signatures.length !== this.inputs.length)
     throw new Error('Number of signatures does not match number of inputs');
 
   var i = 0,
@@ -349,7 +350,7 @@ TxProposal.prototype._addSignaturesToBitcoreTx = function(tx, signatures, xpub) 
     } catch (e) {};
   });
 
-  if (i != tx.inputs.length)
+  if (i !== tx.inputs.length)
     throw new Error('Wrong signatures');
 };
 
@@ -362,7 +363,7 @@ TxProposal.prototype.sign = function(copayerId, signatures, xpub) {
 
     this.addAction(copayerId, 'accept', null, signatures, xpub);
 
-    if (this.status == 'accepted') {
+    if (this.status === 'accepted') {
       this.raw = tx.uncheckedSerialize();
       this.txid = tx.id;
     }
@@ -379,7 +380,7 @@ TxProposal.prototype.reject = function(copayerId, reason) {
 };
 
 TxProposal.prototype.isTemporary = function() {
-  return this.status == 'temporary';
+  return this.status === 'temporary';
 };
 
 TxProposal.prototype.isPending = function() {
@@ -397,7 +398,7 @@ TxProposal.prototype.isRejected = function() {
 };
 
 TxProposal.prototype.isBroadcasted = function() {
-  return this.status == 'broadcasted';
+  return this.status === 'broadcasted';
 };
 
 TxProposal.prototype.setBroadcasted = function() {

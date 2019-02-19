@@ -47,7 +47,16 @@ var config = {
        // url: 'http://localhost:3000',
        url: 'https://api.bitcore.io',
       },
-
+    },
+    MXBIT: {
+      livenet: {
+        url: 'http://localhost:3000',
+        // url: 'https://api.matrixbit.io',
+      },
+      testnet: {
+        url: 'http://localhost:3000',
+        // url: 'https://api.matrixbit.io',
+      },
     },
   },
   pushNotificationsOpts: {

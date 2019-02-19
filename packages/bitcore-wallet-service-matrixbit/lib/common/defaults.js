@@ -51,6 +51,11 @@ Defaults.FEE_LEVELS = {
     name: 'normal',
     nbBlocks: 2,
     defaultValue: 2000,
+  }],
+  MXBIT: [{
+    name: 'normal',
+    nbBlocks: 2,
+    defaultValue: 2000,
   }]
 };
 
@@ -92,7 +97,7 @@ Defaults.BALANCE_CACHE_ADDRESS_THRESOLD = Defaults.HISTORY_CACHE_ADDRESS_THRESOL
 
 Defaults.BALANCE_CACHE_DURATION = 10;
 
-// Cache time for blockchain height (in ms) 
+// Cache time for blockchain height (in ms)
 // this is actually erased on 'new block' notifications
 // so, 30m seems fine
 Defaults.BLOCKHEIGHT_CACHE_TIME = 30 * 60 * 1000;

@@ -21,7 +21,11 @@ var PROVIDERS = {
       'livenet': 'https://api.bitpay.com',
       'testnet': 'https://api.bitpay.com',
     },
- 
+    'MXBIT': {
+      'livenet': 'https://api.matrixbit.io',
+      'testnet': 'https://api.matrixbit.io',
+    },
+
   },
 };
 
@@ -40,12 +44,12 @@ function BlockChainExplorer(opts) {
   var url = opts.url || PROVIDERS[provider][coin][network];
 
 
-  if (coin != 'bch' && opts.addressFormat)
-    throw new Error('addressFormat only supported for bch');
+  if (coin == 'btc' && opts.addressFormat)
+    throw new Error('addressFormat only supported for bch / MXBIT');
 
-  if (coin == 'bch' && !opts.addressFormat)
+  if (coin != 'btc' && !opts.addressFormat)
     opts.addressFormat = 'cashaddr';
-  
+
 
   switch (provider) {
     case 'v8':
@@ -57,7 +61,7 @@ function BlockChainExplorer(opts) {
         userAgent: opts.userAgent,
         addressFormat: opts.addressFormat,
       });
- 
+
     default:
       throw new Error('Provider ' + provider + ' not supported.');
   };

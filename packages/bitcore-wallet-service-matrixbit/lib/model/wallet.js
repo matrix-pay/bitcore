@@ -12,6 +12,7 @@ var AddressManager = require('./addressmanager');
 var Bitcore = {
   'btc': require('bitcore-lib'),
   'bch': require('bitcore-lib-cash'),
+  'MXBIT': require('bitcore-lib-matrixbit'),
 };
 
 var config = require('../../config');
@@ -57,8 +58,8 @@ Wallet.create = function(opts) {
 
   // v8 related
   x.beRegistered = false; // Block explorer registered
-  x.beAuthPrivateKey2 = null; 
-  x.beAuthPublicKey2 = null; 
+  x.beAuthPrivateKey2 = null;
+  x.beAuthPublicKey2 = null;
 
   // x.nativeCashAddr opts is only for testing
   x.nativeCashAddr = _.isUndefined(opts.nativeCashAddr) ? (x.coin == 'bch' ? true : null) : opts.nativeCashAddr;
@@ -95,8 +96,8 @@ Wallet.fromObj = function(obj) {
   x.addressManager = AddressManager.fromObj(obj.addressManager);
   x.scanStatus = obj.scanStatus;
   x.beRegistered = obj.beRegistered;
-  x.beAuthPrivateKey2 = obj.beAuthPrivateKey2; 
-  x.beAuthPublicKey2 = obj.beAuthPublicKey2; 
+  x.beAuthPrivateKey2 = obj.beAuthPrivateKey2;
+  x.beAuthPublicKey2 = obj.beAuthPublicKey2;
 
   x.nativeCashAddr = obj.nativeCashAddr;
 
@@ -151,7 +152,7 @@ Wallet.prototype._updatePublicKeyRing = function() {
 };
 
 Wallet.prototype.addCopayer = function(copayer) {
-  $.checkState(copayer.coin == this.coin);
+  $.checkState(copayer.coin === this.coin);
 
   this.copayers.push(copayer);
   if (this.copayers.length < this.n) return;
@@ -161,7 +162,7 @@ Wallet.prototype.addCopayer = function(copayer) {
 };
 
 Wallet.prototype.addCopayerRequestKey = function(copayerId, requestPubKey, signature, restrictions, name) {
-  $.checkState(this.copayers.length == this.n);
+  $.checkState(this.copayers.length === this.n);
 
   var c = this.getCopayer(copayerId);
 
@@ -182,7 +183,7 @@ Wallet.prototype.getCopayer = function(copayerId) {
 };
 
 Wallet.prototype.isComplete = function() {
-  return this.status == 'complete';
+  return this.status === 'complete';
 };
 
 Wallet.prototype.isScanning = function() {

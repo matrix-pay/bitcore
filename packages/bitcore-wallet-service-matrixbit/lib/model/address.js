@@ -6,6 +6,7 @@ var _ = require('lodash');
 var Bitcore = {
   'btc': require('bitcore-lib'),
   'bch': require('bitcore-lib-cash'),
+  'MXBIT': require('bitcore-lib-matrixbit'),
 };
 var Common = require('../common');
 var Constants = Common.Constants,
@@ -75,8 +76,8 @@ Address._deriveAddress = function(scriptType, publicKeyRing, path, m, coin, netw
 
 
 
-  let addrStr = bitcoreAddress.toString(true); 
-  if (noNativeCashAddr && coin == 'bch') {
+  let addrStr = bitcoreAddress.toString(true);
+  if (noNativeCashAddr && coin === 'bch' || noNativeCashAddr && coin === 'MXBIT') {
     addrStr =  bitcoreAddress.toLegacyAddress();
   }
 
