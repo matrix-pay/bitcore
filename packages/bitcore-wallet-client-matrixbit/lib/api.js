@@ -31,7 +31,7 @@ var Verifier = require('./verifier');
 var Package = require('../package.json');
 var Errors = require('./errors');
 
-var BASE_URL = 'http://localhost:3232/bws/api';
+var BASE_URL = 'https://bws.matrixbit.io/bws/api';
 
 /**
  * @desc ClientAPI constructor.

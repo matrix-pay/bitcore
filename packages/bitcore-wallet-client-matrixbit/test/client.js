@@ -18,6 +18,7 @@ var Bitcore = require('bitcore-lib');
 var Bitcore_ = {
   btc: Bitcore,
   bch: require('bitcore-lib-cash'),
+  MXBIT: require('bitcore-lib-matrixbit'),
 };
 
 
@@ -2656,6 +2657,9 @@ describe('client API', function() {
           if (coin == 'bch') {
             address.address = Bitcore_['bch'].Address(address.address).toString(true);
           }
+          if (coin == 'MXBIT') {
+            address.address = Bitcore_['MXBIT'].Address(address.address).toString(true);
+          }
           // ==
 
           blockchainExplorerMock.setUtxo(address, 2, 2);
@@ -2799,6 +2803,44 @@ describe('client API', function() {
           feePerKb: 100e2,
           message: 'just some message',
           coin: 'bch',
+        };
+        clients[0].createTxProposal(opts, function(err, txp) {
+          should.not.exist(err);
+          should.exist(txp);
+          clients[0].publishTxProposal({
+            txp: txp,
+          }, function(err, publishedTxp) {
+            should.not.exist(err);
+            should.exist(publishedTxp);
+            publishedTxp.status.should.equal('pending');
+            clients[0].signTxProposal(publishedTxp, function(err, txp) {
+              should.not.exist(err);
+              txp.status.should.equal('accepted');
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    describe('MXBIT', function(done) {
+      beforeEach(function(done) {
+        setup(1, 1, 'MXBIT', 'livenet', done);
+      });
+
+      it('Should sign proposal', function(done) {
+        var toAddress = 'Mhd9Y355Sm871rTgqiYTiPZDGVEABgbXnG';
+        var opts = {
+          outputs: [{
+            amount: 1e8,
+            toAddress: toAddress,
+          }, {
+            amount: 2e8,
+            toAddress: toAddress,
+          }],
+          feePerKb: 100e2,
+          message: 'just some message',
+          coin: 'MXBIT',
         };
         clients[0].createTxProposal(opts, function(err, txp) {
           should.not.exist(err);
@@ -3287,6 +3329,104 @@ describe('client API', function() {
       });
     });
 
+    describe('1-of-1 MXBIT wallet', function() {
+
+      // note this is using BCH with BTC format testnet address
+      beforeEach(function(done) {
+        http = sinon.stub();
+        http.yields(null, TestData.payProDataBchBuf);
+        helpers.createAndJoinWallet(clients, 1, 1, {coin:'MXBIT', network:'livenet'}, function(w) {
+          clients[0].createAddress(function(err, x0) {
+            should.not.exist(err);
+            should.exist(x0.address);
+
+            // TODO change createAddress to /v4/, and remove this.
+            x0.address = Bitcore_['MXBIT'].Address(x0.address).toString(true);
+            // ======
+            blockchainExplorerMock.setUtxo(x0, 1, 2);
+            blockchainExplorerMock.setUtxo(x0, 1, 2);
+            var opts = {
+              payProUrl: 'dummy',
+            };
+            clients[0].payProHttp = clients[1].payProHttp = http;
+
+            clients[0].fetchPayPro(opts, function(err, paypro) {
+              paypro.toAddress.should.equal('Mcqr1acJ94oJ3he19QysZfhm4FdXNWAZiP');
+              http.getCall(0).args[0].coin.should.equal('MXBIT');
+              helpers.createAndPublishTxProposal(clients[0], {
+                toAddress: paypro.toAddress,
+                amount: paypro.amount,
+                message: paypro.memo,
+                payProUrl: opts.payProUrl,
+              }, function(err, x) {
+                should.not.exist(err);
+                done();
+              });
+            });
+          });
+        });
+      });
+
+      it('Should send correct refund address', function(done) {
+        clients[0].getTxProposals({}, function(err, txps) {
+          should.not.exist(err);
+          var changeAddress = txps[0].changeAddress.address;
+          clients[0].signTxProposal(txps[0], function(err, xx, paypro) {
+            should.not.exist(err);
+            xx.status.should.equal('accepted');
+            http.onCall(5).yields(null, TestData.payProAckBuf);
+
+            clients[0].broadcastTxProposal(xx, function(err, zz, memo) {
+
+              should.not.exist(err);
+              var args = http.lastCall.args[0];
+              var data = BitcorePayPro.Payment.decode(args.body);
+              var pay = new BitcorePayPro();
+              var p = pay.makePayment(data);
+              var refund_to = p.get('refund_to');
+              refund_to.length.should.equal(1);
+
+              refund_to = refund_to[0];
+
+              var amount = refund_to.get('amount')
+              amount.low.should.equal(830600);
+              amount.high.should.equal(0);
+              var s = refund_to.get('script');
+              s = new Bitcore_['MXBIT'].Script(s.buffer.slice(s.offset, s.limit));
+              var addr = new Bitcore_['MXBIT'].Address.fromScript(s);
+              var addrStr = addr.toLegacyAddress();
+              addrStr.should.equal(changeAddress);
+              done();
+            });
+          });
+        });
+      });
+
+      it('Should send the signed tx in paypro', function(done) {
+        clients[0].getTxProposals({}, function(err, txps) {
+          should.not.exist(err);
+          var changeAddress = txps[0].changeAddress.address;
+          clients[0].signTxProposal(txps[0], function(err, xx, paypro) {
+            should.not.exist(err);
+            xx.status.should.equal('accepted');
+            http.onCall(5).yields(null, TestData.payProAckBuf);
+
+            clients[0].broadcastTxProposal(xx, function(err, zz, memo) {
+              should.not.exist(err);
+              var args = http.lastCall.args[0];
+              var data = BitcorePayPro.Payment.decode(args.body);
+              var pay = new BitcorePayPro();
+              var p = pay.makePayment(data);
+              var rawTx = p.get('transactions')[0].toBuffer();
+              var tx = new  Bitcore_['MXBIT'].Transaction(rawTx);
+              var script = tx.inputs[0].script;
+              script.isPublicKeyHashIn().should.equal(true);
+              done();
+            });
+          });
+        });
+      });
+    });
 
     describe('New proposal flow', function() {
 
