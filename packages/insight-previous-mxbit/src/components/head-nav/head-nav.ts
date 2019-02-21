@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import * as bitcoreLib from 'bitcore-lib';
 import * as bitcoreLibCash from 'bitcore-lib-cash';
-import * as bitcoreLibMXBIT from 'bitcore-lib-matrixbit';
+import * as bitcoreLibMXBIT from 'mxbitcore-lib';
 import {
   ActionSheetController,
   App,

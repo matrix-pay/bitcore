@@ -1,5 +1,5 @@
 {
-  "name": "@bitpay/insight",
+  "name": "insight-mxbit",
   "version": "8.0.0",
   "description": "A blockchain explorer for Bitcore",
   "homepage": "https://github.com/bitpay/bitcore",

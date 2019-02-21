@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
 import * as bitcoreLib from 'bitcore-lib';
 import * as bitcoreLibCash from 'bitcore-lib-cash';
-import * as bitcoreLibMXBIT from 'bitcore-lib-matrixbit';
+import * as bitcoreLibMXBIT from 'mxbitcore-lib';
 import * as _ from 'lodash';
 import { Observable } from 'rxjs';
 import { ApiProvider, ChainNetwork } from '../api/api';
