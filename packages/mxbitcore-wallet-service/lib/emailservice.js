@@ -6,6 +6,7 @@ var async = require('async');
 var Mustache = require('mustache');
 var log = require('npmlog');
 log.debug = log.verbose;
+var nodemailer = require('nodemailer');
 var fs = require('fs');
 var path = require('path');
 var Utils = require('./common/utils');
@@ -53,7 +54,6 @@ var EMAIL_TYPES = {
     notifyOthers: false,
   },
 };
-
 
 function EmailService() {};
 
@@ -214,20 +214,25 @@ EmailService.prototype._getRecipientsList = function(notification, emailType, cb
 };
 
 EmailService.prototype._getDataForTemplate = function(notification, recipient, cb) {
-  var self = this;  
+  var self = this;
 
   // TODO: Declare these in BWU
   var UNIT_LABELS = {
     btc: 'BTC',
     bit: 'bits',
     bch: 'BCH',
+    MXBIT: 'MXBIT',
   };
 
   var data = _.cloneDeep(notification.data);
   data.subjectPrefix = _.trim(self.subjectPrefix) + ' ';
   if (data.amount) {
     try {
+     // var unit = recipient.unit.toLowerCase();
       var unit = recipient.unit.toLowerCase();
+      if( unit === 'mxbit') {
+        unit = 'MXBIT';
+      }
       data.amount = Utils.formatAmount(+data.amount, unit) + ' ' + UNIT_LABELS[unit];
     } catch (ex) {
       return cb(new Error('Could not format amount', ex));
@@ -284,7 +289,7 @@ EmailService.prototype._send = function(email, cb) {
   if (email.bodyHtml) {
     mailOptions.html = email.bodyHtml;
   }
-  self.mailer.send(mailOptions)
+  self.mailer.sendMail(mailOptions)
   .then((result) => {
     log.debug('Message sent: ', result || '');
     return cb(null,result);
